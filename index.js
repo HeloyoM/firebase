@@ -1,10 +1,27 @@
 const express = require("express")
-const { initializeApp, applicationDefault, cert } = require('firebase-admin/app')
-const { getFirestore, Timestamp, FieldValue, Filter } = require('firebase-admin/firestore')
-const admin = require("firebase-admin");
+const corsOptions = require("./config/cors")
+const cors = require('cors')
+const { initializeFirebaseApp } = require('./lib/firebase')
+const { handler } = require('./handler')
 
-const serviceAccount = require("./book-1758c-firebase-adminsdk-f55as-433d23326a.json")
+const app = express()
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+app.use(express.json())
+initializeFirebaseApp()
+
+app.use(cors(corsOptions))
+
+app.post('*', async (req, res) => {
+    console.log(req.body)
+    res.send(await handler(req, "POST"))
+})
+
+app.get('*', async (req, res) => {
+    res.send(await handler(req, "GET"))
+})
+
+const PORT = 4040
+
+app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`)
+})
